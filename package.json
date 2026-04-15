@@ -10,15 +10,22 @@
     "package": "plasmo package"
   },
   "dependencies": {
-    "plasmo": "0.88.0"
+    "plasmo": "0.88.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
   },
   "devDependencies": {
     "@types/chrome": "0.0.258",
     "@types/node": "20.11.17",
+    "@types/react": "18.2.48",
+    "@types/react-dom": "18.2.18",
     "prettier": "3.2.5",
     "typescript": "5.3.3"
   },
   "manifest": {
+    "permissions": [
+      "storage"
+    ],
     "host_permissions": [
       "https://chatgpt.com/*",
       "https://chat.openai.com/*"

@@ -50,7 +50,27 @@ const fontFaceCSS = `
 //               → base (shared tokens + all selector overrides).
 const css = `${fontFaceCSS}\n${lightCSS}\n${darkCSS}\n${baseCSS}`
 
+// ─── Enabled-state handling ──────────────────────────────────────
+// State shape:
+//   chrome.storage.sync["cloakd.enabled"] = { chatgpt: true, gemini: true, ... }
+// A missing key / missing product defaults to enabled — new installs
+// are reskinned immediately without the user having to click anything.
+const STORAGE_KEY = "cloakd.enabled"
+const PRODUCT_ID = "chatgpt"
+
+/**
+ * Optimistic flag updated first from the synchronous default, then
+ * replaced once chrome.storage.sync.get() resolves. Guards both the
+ * MutationObserver path and the storage-change path below.
+ */
+let enabled = true
+
+function remove() {
+  document.getElementById(STYLE_ID)?.remove()
+}
+
 function inject() {
+  if (!enabled) return
   if (document.getElementById(STYLE_ID)) return
   const el = document.createElement("style")
   el.id = STYLE_ID
@@ -60,12 +80,41 @@ function inject() {
   ;(document.head ?? document.documentElement).appendChild(el)
 }
 
+// Inject synchronously under the optimistic assumption that the
+// extension is enabled. The async storage read below will undo this
+// within ~a frame if the user has actually disabled ChatGPT — a
+// short FOUC we accept in exchange for zero-flicker on the common
+// (enabled) path.
 inject()
+
+// Hydrate the real state from storage. If we were wrong to inject,
+// strip the style tag; if we were right, do nothing.
+chrome.storage.sync.get([STORAGE_KEY], (result) => {
+  const map = (result?.[STORAGE_KEY] ?? {}) as Record<string, boolean>
+  enabled = map[PRODUCT_ID] ?? true
+  if (!enabled) remove()
+})
+
+// React to toggles from the popup (or Chrome Sync from another device).
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area !== "sync") return
+  const change = changes[STORAGE_KEY]
+  if (!change) return
+  const map = (change.newValue ?? {}) as Record<string, boolean>
+  const next = map[PRODUCT_ID] ?? true
+  if (next === enabled) return
+  enabled = next
+  if (enabled) inject()
+  else remove()
+})
 
 // ChatGPT occasionally swaps <head> during route transitions; cheaply
 // re-inject if our <style> tag disappears. The getElementById short-circuit
-// keeps this essentially free on every mutation.
-new MutationObserver(inject).observe(document.documentElement, {
+// keeps this essentially free on every mutation. Respects the enabled
+// flag so a disabled state stays disabled across SPA navigations.
+new MutationObserver(() => {
+  if (enabled && !document.getElementById(STYLE_ID)) inject()
+}).observe(document.documentElement, {
   childList: true,
   subtree: true
 })
