@@ -1,9 +1,15 @@
-name: Release CRX
+name: Release
 
 # Triggers on any push (including merge commits) to the `release` branch.
 # Typical flow: bump package.json version on a dev branch, merge into
 # `release`, push. CI reads the version, refuses if the tag already
-# exists, builds, signs the CRX, and publishes a GitHub Release.
+# exists, builds, zips, and publishes a GitHub Release.
+#
+# We intentionally ship only .zip (not .crx). Chrome blocks sideloaded
+# .crx files with CRX_REQUIRED_PROOF_MISSING since v75 regardless of
+# signature validity — a Web Store–issued proof of origin is mandatory
+# for .crx installs and we don't have one. `.zip` + Load unpacked
+# works identically once loaded, without any proof.
 on:
   push:
     branches:
@@ -60,26 +66,10 @@ jobs:
         run: |
           zip -r "$GITHUB_WORKSPACE/cloakd-v${{ steps.version.outputs.version }}.zip" .
 
-      - name: Write CRX private key from secret
-        env:
-          CRX_PRIVATE_KEY: ${{ secrets.CRX_PRIVATE_KEY }}
+      - name: Sanity check output
         run: |
-          if [ -z "$CRX_PRIVATE_KEY" ]; then
-            echo "::error::Secret CRX_PRIVATE_KEY is missing. See README → Release section for setup."
-            exit 1
-          fi
-          printf '%s' "$CRX_PRIVATE_KEY" > cloakd.pem
-          chmod 600 cloakd.pem
-
-      - name: Pack CRX
-        env:
-          CRX_KEY: ./cloakd.pem
-        run: node scripts/pack-crx.mjs
-
-      - name: Sanity check outputs
-        run: |
-          ls -lh "cloakd-v${{ steps.version.outputs.version }}.crx" \
-                 "cloakd-v${{ steps.version.outputs.version }}.zip"
+          ls -lh "cloakd-v${{ steps.version.outputs.version }}.zip"
+          unzip -l "cloakd-v${{ steps.version.outputs.version }}.zip" | head -20
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -94,12 +84,11 @@ jobs:
 
             ### Install
 
-            - **Chrome / Chromium**: download `cloakd-v${{ steps.version.outputs.version }}.zip`, unzip, and use `chrome://extensions` → Developer mode → **Load unpacked**.
-            - **Brave / Edge / enterprise-managed Chrome**: may accept the `.crx` directly.
-          files: |
-            cloakd-v${{ steps.version.outputs.version }}.crx
-            cloakd-v${{ steps.version.outputs.version }}.zip
+            1. Download `cloakd-v${{ steps.version.outputs.version }}.zip` below
+            2. Unzip it to a **permanent** folder (e.g. `~/Applications/cloakd/`) — the folder must stay where you put it, Chrome remembers the absolute path
+            3. Open `chrome://extensions` → enable **Developer mode** → **Load unpacked** → select the unzipped folder
+            4. Visit https://chatgpt.com
 
-      - name: Cleanup private key
-        if: always()
-        run: rm -f cloakd.pem
+            **Why no `.crx`?** Chrome blocks sideloaded `.crx` files with `CRX_REQUIRED_PROOF_MISSING` since v75. See the [README](https://github.com/${{ github.repository }}#install) for details.
+          files: |
+            cloakd-v${{ steps.version.outputs.version }}.zip

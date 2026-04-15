@@ -24,9 +24,5 @@ pnpm-debug.log*
 .env.local
 .env.*.local
 
-# CRX signing keys — NEVER commit these
-*.pem
-
-# Release artifacts produced by scripts/pack-crx.mjs or CI
-cloakd-*.crx
+# Release artifacts produced by CI
 cloakd-*.zip

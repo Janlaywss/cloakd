@@ -14,6 +14,7 @@
 - 浅色 / 深色模式自动跟随 ChatGPT 自身设置
 - 所有可调参数抽成 CSS 变量,调优只改 3 个文件
 - 扩展 popup 里按产品独立开关
+- 附带 [`claude-communication-style-guide.md`](claude-communication-style-guide.md) —— 把 Claude 的*声音*也做成 prompt,和视觉伪装配套
 
 > ⚠️ 个人折腾项目。目前只支持 ChatGPT (`chatgpt.com` / `chat.openai.com`)。Gemini 版本计划中,未开工。
 
@@ -21,38 +22,45 @@
 
 ## 安装
 
-### 先决条件
+两条路,按需选一。
 
-- Node 20+
-- pnpm (推荐) 或 npm
+### 普通用户 —— 下载 zip
 
-### 步骤
+Chrome 从 v75 起拒绝任何本地 `.crx` 文件,错误是 `CRX_REQUIRED_PROOF_MISSING`(必须有 Web Store 签发的安装来源证明,我们没有)。所以 Cloakd 发布的是 `.zip`,你解压后用 Chrome 的"开发者模式 → 加载已解压的扩展"来装。效果完全一样,只是载体不同。
+
+1. 在 [Releases](https://github.com/Janlaywss/cloakd/releases/latest) 里下载 `cloakd-v<version>.zip`
+2. 解压到一个**永久位置**。这个文件夹必须留在原地 —— Chrome 记的是加载时的绝对路径,你删掉或移动它扩展就失效。
+
+   ```sh
+   mkdir -p ~/Applications/cloakd
+   unzip cloakd-v*.zip -d ~/Applications/cloakd
+   ```
+
+3. 打开 `chrome://extensions`
+4. 右上角打开 **开发者模式**
+5. 点 **加载已解压的扩展程序**,选刚才解压的文件夹
+6. 访问 https://chatgpt.com,应该立刻看到 Claude 风格的界面
+
+**升级**:下载新版本的 zip,**覆盖解压到同一个文件夹**,然后在 `chrome://extensions` 里点 Cloakd 卡片上的 ↻ 刷新图标即可。不需要先移除再添加。
+
+**关于"关闭开发者模式"的提示条**:Chrome 每次启动,只要有开发者模式加载的扩展就会弹一个条横幅,点 **取消** / **保留** (具体文案看版本)即可。这是所有非 Web Store 扩展都会有的,正常现象。
+
+### 贡献者 —— 从源码构建
+
+先决条件:Node 20+ 和 pnpm。
 
 ```sh
-# 1. 安装依赖（大约 9 秒）
-pnpm install
-
-# 2. 构建生产包
-pnpm build
-
-# 3. 加载到 Chrome
-# chrome://extensions → 打开右上角"开发者模式" → "加载已解压的扩展程序"
-# → 选择 build/chrome-mv3-prod/
+pnpm install     # 大约 9 秒
+pnpm build       # 生产构建 → build/chrome-mv3-prod/
+# 或
+pnpm dev         # watch 模式 → build/chrome-mv3-dev/
 ```
 
-然后访问 https://chatgpt.com,应该立刻看到 Claude 风格的界面。
+然后在 `chrome://extensions` 里用 **加载已解压的扩展程序** 选 `build/chrome-mv3-prod/` 或 `build/chrome-mv3-dev/`。
 
-### 开发模式
+开发模式下改任何 CSS / TS 文件 Plasmo 都会自动 rebuild。之后在 `chrome://extensions` 点 Cloakd 卡片的 ↻ 刷新图标,再硬刷 chatgpt.com (⌘⇧R / Ctrl+Shift+R) 就能看到变化。
 
-改样式的时候别用 `pnpm build`,用 watch:
-
-```sh
-pnpm dev
-```
-
-然后加载的是 `build/chrome-mv3-dev/`。保存任何 CSS / TS 文件,Plasmo 会自动 rebuild。rebuild 完成之后,需要在 `chrome://extensions` 里点 Cloakd 卡片上的 **刷新** 图标,然后在 chatgpt.com 上硬刷(⌘⇧R)才能看到新样式生效。
-
-> 依赖安装说明:项目里通过 `pnpm.overrides` 把 sharp 强制升到了 0.33.x,避开了旧版 sharp 从 GitHub release 拉 libvips 二进制的坑 —— 那个在国内基本必超时。详见 [AGENT.md](AGENT.md) 里 "Gotchas #1"。
+> **关于 `sharp@0.33` override**:项目通过 `pnpm.overrides` 把 sharp 强制升到 0.33.x,避开旧版 sharp 0.32 从 GitHub release 下载 libvips 的坑 —— 那个在国内基本必超时。详见 [AGENT.md](AGENT.md) Gotcha #1。
 
 ---
 
@@ -77,6 +85,29 @@ pnpm dev
 ```
 
 切换立即生效,**不需要刷新页面**。状态存在 `chrome.storage.sync` 里,同一 Chrome 账号跨设备同步。
+
+---
+
+## Claude 的声音 (bonus)
+
+Cloakd 负责给 ChatGPT 换上 Claude 的*脸*。至于 Claude 的*声音*,仓库里还提供了 [`claude-communication-style-guide.md`](claude-communication-style-guide.md) —— Claude 沟通哲学的 10 条原则精炼:
+
+1. **语气** —— 温暖但直接;不兜圈子,也不冷冰冰
+2. **结构** —— 散文优先,列表要"赚得到"才用
+3. **校准** —— 看人下菜;别跟专家讲基础,也别对新手摆架子
+4. **诚实** —— 不知道就说不知道;区分事实 / 推断 / 意见
+5. **情绪基线** —— 稳定而非扁平;拒绝空洞的热情
+6. **经济** —— 每句话都要挣到自己的位置;不复述,不废话
+7. **观点** —— 要有立场,用推理捍卫,接受被说服
+8. **语言** —— 干净、精确、自然;不用 AI 腔和企业黑话
+9. **错误处理** —— 承认、修正、继续前进,不自责过度
+10. **元原则** —— 做有用的事,做真实的事;把读者当成聪明的成年人
+
+### 怎么用
+
+把 [`claude-communication-style-guide.md`](claude-communication-style-guide.md) 整个复制到 **ChatGPT → 设置 → 个性化 → Custom instructions → "你希望 ChatGPT 如何回应？"** 里(或者你用的 Cursor / LibreChat / Claude desktop 里对应的字段)。配合 Cloakd 的视觉伪装,ChatGPT 就会看起来、听起来都像 Claude。
+
+这份文档本身独立可用 —— 不装扩展也能用,或者 fork 一份当你自己 AI persona prompt 的基底。
 
 ---
 
@@ -117,8 +148,8 @@ pnpm dev
 
 两套 token,两种职责:
 
-- **`--cloakd-*`** — 这个项目自己的语义 token (`--cloakd-bg`, `--cloakd-accent`, `--cloakd-radius-bubble` 等)。选择器都读这些。
-- **`--font-*`** — 字体相关的 token,完全镜像 Claude.ai 自己用的变量名 (`--font-ui`, `--font-ui-serif`, `--font-user-message`, `--font-claude-response`, `--font-anthropic-sans/serif/mono` 等)。这样将来从 Claude.ai 直接复制 CSS 片段过来就能用。
+- **`--cloakd-*`** —— 这个项目自己的语义 token (`--cloakd-bg`, `--cloakd-accent`, `--cloakd-radius-bubble` 等)。选择器都读这些。
+- **`--font-*`** —— 字体相关的 token,完全镜像 Claude.ai 自己用的变量名 (`--font-ui`, `--font-ui-serif`, `--font-user-message`, `--font-claude-response`, `--font-anthropic-sans/serif/mono` 等)。这样将来从 Claude.ai 直接复制 CSS 片段过来就能用。
 
 ---
 
@@ -126,29 +157,29 @@ pnpm dev
 
 ```
 cloakd/
-├── AGENT.md                    AI 助手使用的项目上下文文档
-├── README.md                   英文主文档
-├── README.zh-CN.md             这个文件
+├── AGENT.md                              AI 助手使用的项目上下文文档
+├── README.md                             英文主文档
+├── README.zh-CN.md                       这个文件
+├── claude-communication-style-guide.md   Claude 的声音,以 prompt 形式
+├── before.png                            首屏截图
 ├── package.json
 ├── tsconfig.json
-├── popup.tsx                   扩展 popup (React) — 每个产品一个开关
+├── popup.tsx                             扩展 popup (React) — 每个产品一个开关
 ├── popup.css
 ├── assets/
-│   ├── icon.png                512×512 占位图标（随时替换）
+│   ├── icon.png                          512×512 占位图标（随时替换）
 │   └── fonts/
-│       ├── anthropic-sans.woff2
-│       └── anthropic-serif.woff2
+│       ├── anthropic-sans.woff2          Anthropic Sans Web Regular
+│       └── anthropic-serif.woff2         Anthropic Serif Web Regular
 ├── contents/
-│   └── chatgpt.ts              content script:注入 @font-face + 三个 CSS 文件
-├── scripts/
-│   └── pack-crx.mjs            CRX 打包脚本 (CI 用,本地也能跑)
+│   └── chatgpt.ts                        content script:注入 @font-face + 三个 CSS 文件
 ├── styles/
 │   └── chatgpt/
-│       ├── base.css            字体 / 几何 / 选择器
-│       ├── light.css           浅色 tokens
-│       └── dark.css            深色 tokens
+│       ├── base.css                      字体 / 几何 / 选择器
+│       ├── light.css                     浅色 tokens
+│       └── dark.css                      深色 tokens
 └── .github/workflows/
-    └── release.yml             合并到 release 分支时自动构建 + 发布 CRX
+    └── release.yml                       合并到 release 分支时自动构建 + 发布 .zip
 ```
 
 ---
@@ -173,13 +204,34 @@ import anthropicSerif from "data-base64:~assets/fonts/anthropic-serif.woff2"
 
 ## Release 自动发布
 
-**每次合并到 `release` 分支**会触发 GitHub Actions workflow ([`.github/workflows/release.yml`](.github/workflows/release.yml)),自动 build、签名、打 `.crx` 和 `.zip`,并发布到 GitHub Release。
+**每次合并到 `release` 分支**会触发 [`.github/workflows/release.yml`](.github/workflows/release.yml),自动:
 
-完整设置流程（生成 CRX 签名 key、添加 GitHub secret、发布流程、本地打包）见 [英文 README 的 Release 章节](README.md#release)。简要说:
+1. 从 `package.json` 读 `version`
+2. **如果 `v<version>` tag 已存在就失败** —— 提醒你 bump version
+3. `pnpm install --frozen-lockfile` → `pnpm build`
+4. 把 `build/chrome-mv3-prod/` 打成 `cloakd-v<version>.zip`
+5. 创建 GitHub Release,tag = `v<version>`,带上 zip
 
-1. 本地 `openssl genrsa -out cloakd.pem 2048` 生成私钥
-2. 把 pem 内容存到 repo 的 `CRX_PRIVATE_KEY` secret
-3. 之后每次想发布: bump `package.json` 的 `version` → commit → merge 到 `release` 分支 → push,CI 会自动打 tag + 发 release
+### 发布流程
+
+```sh
+# 1. Bump package.json 里的 version (比如 0.0.1 → 0.0.2)
+git add package.json pnpm-lock.yaml
+git commit -m "release v0.0.2"
+
+# 2. 合并到 release 分支并 push
+git checkout release
+git merge main
+git push origin release
+```
+
+CI 接手。去 **Actions** 标签看跑状态,完事后去 **Releases** 标签下载 zip。
+
+### 为什么不发 .crx？
+
+Chrome 从 v75 起,自签名的 `.crx` 一律以 `CRX_REQUIRED_PROOF_MISSING` 拒绝安装(Web Store 签发的"安装来源证明"是强制的,自分发扩展拿不到)。`.zip` + Load unpacked 路径不需要任何证明,加载后状态完全一致,所以 CI 就只打 zip。
+
+如果你真要 `.crx`(比如 Brave / Ungoogled Chromium 这类更宽松的浏览器),自己拿任意 CRX3 工具对 `build/chrome-mv3-prod/` 签名即可。不是大多数人想要的形式,CI 里就不做了。
 
 ---
 
