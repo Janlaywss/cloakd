@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="before.png" alt="Cloakd — ChatGPT reskinned to look like Claude.ai" width="720" />
+</p>
+
 # Cloakd
 
 **Languages:** English · [简体中文](README.zh-CN.md)
