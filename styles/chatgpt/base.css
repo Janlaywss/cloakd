@@ -232,25 +232,25 @@ aside button:hover {
   border:        1px solid var(--cloakd-border) !important;
 }
 
-/* Code blocks */
-.prose pre,
-.markdown pre,
-pre:has(code) {
-  background:    var(--cloakd-bg-subtle) !important;
-  border:        1px solid var(--cloakd-border) !important;
-  border-radius: var(--cloakd-radius-md) !important;
-  padding:       14px 18px !important;
-  font-family:   var(--cloakd-font-mono) !important;
-}
+/*!* Code blocks *!*/
+/*.prose pre,*/
+/*.markdown pre,*/
+/*pre:has(code) {*/
+/*  background:    var(--cloakd-bg-subtle) !important;*/
+/*  border:        1px solid var(--cloakd-border) !important;*/
+/*  border-radius: var(--cloakd-radius-md) !important;*/
+/*  padding:       14px 18px !important;*/
+/*  font-family:   var(--cloakd-font-mono) !important;*/
+/*}*/
 
-pre code,
-.prose pre code,
-.markdown pre code {
-  background:  transparent !important;
-  padding:     0 !important;
-  border:      none !important;
-  font-family: var(--cloakd-font-mono) !important;
-}
+/*pre code,*/
+/*.prose pre code,*/
+/*.markdown pre code {*/
+/*  background:  transparent !important;*/
+/*  padding:     0 !important;*/
+/*  border:      none !important;*/
+/*  font-family: var(--cloakd-font-mono) !important;*/
+/*}*/
 
 /* ─── 6. Composer (chat input) ───────────────────────────────────── */
 form[data-type="unified-composer"],
@@ -275,6 +275,10 @@ textarea[data-id="root"] {
 
 #prompt-textarea::placeholder {
   color: var(--cloakd-text-subtle) !important;
+}
+
+.content-fade.single-line:after {
+  background: var(--cloakd-bg) !important;
 }
 
 /* ─── 7. Buttons ─────────────────────────────────────────────────── */
