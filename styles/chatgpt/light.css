@@ -1,0 +1,50 @@
+/*
+ * ═══════════════════════════════════════════════════════════════════
+ *  cloakd — ChatGPT light theme tokens
+ *  ────────────────────────────────────────────────────────────────────
+ *  Colors, surfaces, and shadows for the default (light) mode.
+ *  These are consumed by base.css selectors via var().
+ *  Tuning values here is safe — no selector logic lives in this file.
+ * ═══════════════════════════════════════════════════════════════════
+ */
+
+:root {
+  /* ── Surfaces ────────────────────────────────────────────────── */
+  --cloakd-bg:              #FAF9F5;  /* main page background (warm cream) */
+  --cloakd-bg-subtle:       #F5F4ED;  /* code blocks, muted panels       */
+  --cloakd-bg-elevated:     #FFFFFF;  /* modals, popovers, cards         */
+  --cloakd-sidebar-bg:      #f8f8f6;  /* sidebar background              */
+  --cloakd-composer-bg:     #FFFFFF;  /* chat input background           */
+  --cloakd-bg-transparent:  rgb(250 249 245 / 0); /* --cloakd-bg @ alpha 0, for gradients */
+
+  /* ── Message bubbles ─────────────────────────────────────────── */
+  --cloakd-user-bubble-bg:      #F0EEE5;    /* Claude's signature user bubble */
+  --cloakd-user-bubble-border:  transparent;
+  --cloakd-assistant-bg:        transparent; /* assistant blends with page    */
+
+  /* ── Text ────────────────────────────────────────────────────── */
+  --cloakd-text:            #141413;  /* primary                   */
+  --cloakd-text-muted:      #5F5E58;  /* secondary                 */
+  --cloakd-text-subtle:     #9C9A8F;  /* tertiary, placeholders    */
+  --cloakd-text-on-accent:  #FFFFFF;  /* text on accent surfaces   */
+
+  /* ── Borders / dividers ──────────────────────────────────────── */
+  --cloakd-border:         #E8E6D9;
+  --cloakd-border-strong:  #D4D1C1;
+
+  /* ── Accent (Claude's copper / terracotta) ───────────────────── */
+  --cloakd-accent:         #C96442;
+  --cloakd-accent-hover:   #B35636;
+  --cloakd-accent-soft:    rgba(201, 100, 66, 0.12);
+
+  /* ── Interaction states ──────────────────────────────────────── */
+  --cloakd-hover-bg:     rgba(20, 20, 19, 0.05);
+  --cloakd-active-bg:    rgba(20, 20, 19, 0.08);
+  --cloakd-selected-bg:  rgba(201, 100, 66, 0.10);
+  --cloakd-focus-ring:   rgba(201, 100, 66, 0.38);
+
+  /* ── Shadows ─────────────────────────────────────────────────── */
+  --cloakd-shadow-sm:  0 1px 2px  rgba(20, 20, 19, 0.04);
+  --cloakd-shadow:     0 2px 8px  rgba(20, 20, 19, 0.06);
+  --cloakd-shadow-md:  0 4px 16px rgba(20, 20, 19, 0.08);
+}

@@ -1,0 +1,32 @@
+{
+  "name": "cloakd",
+  "displayName": "Cloakd",
+  "version": "0.0.1",
+  "description": "Reskin ChatGPT (and later Gemini) to look and feel like Claude.",
+  "private": true,
+  "scripts": {
+    "dev": "plasmo dev",
+    "build": "plasmo build",
+    "package": "plasmo package"
+  },
+  "dependencies": {
+    "plasmo": "0.88.0"
+  },
+  "devDependencies": {
+    "@types/chrome": "0.0.258",
+    "@types/node": "20.11.17",
+    "prettier": "3.2.5",
+    "typescript": "5.3.3"
+  },
+  "manifest": {
+    "host_permissions": [
+      "https://chatgpt.com/*",
+      "https://chat.openai.com/*"
+    ]
+  },
+  "pnpm": {
+    "overrides": {
+      "sharp": "^0.33.5"
+    }
+  }
+}

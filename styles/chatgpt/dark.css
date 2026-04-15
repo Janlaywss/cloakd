@@ -1,0 +1,49 @@
+/*
+ * ═══════════════════════════════════════════════════════════════════
+ *  cloakd — ChatGPT dark theme tokens
+ *  ────────────────────────────────────────────────────────────────────
+ *  Activated when ChatGPT puts `.dark` on <html> (Tailwind convention);
+ *  also respects `[data-theme="dark"]` as a fallback hook.
+ *  Same variable names as light.css — CSS cascade picks whichever wins.
+ * ═══════════════════════════════════════════════════════════════════
+ */
+
+html.dark,
+:root[data-theme="dark"] {
+  /* ── Surfaces ────────────────────────────────────────────────── */
+  --cloakd-bg:             #262624;
+  --cloakd-bg-subtle:      #1F1E1C;
+  --cloakd-bg-elevated:    #2F2E2B;
+  --cloakd-sidebar-bg:     #1E1D1B;
+  --cloakd-composer-bg:    #30302D;
+  --cloakd-bg-transparent: rgb(38 38 36 / 0); /* --cloakd-bg @ alpha 0, for gradients */
+
+  /* ── Message bubbles ─────────────────────────────────────────── */
+  --cloakd-user-bubble-bg: #121212;
+  --cloakd-assistant-bg:   transparent;
+
+  /* ── Text ────────────────────────────────────────────────────── */
+  --cloakd-text:        #F5F4EE;
+  --cloakd-text-muted:  #B5B2A7;
+  --cloakd-text-subtle: #8B887E;
+
+  /* ── Borders ─────────────────────────────────────────────────── */
+  --cloakd-border:        #e2e1da26;
+  --cloakd-border-strong: #4D4B46;
+
+  /* ── Accent ──────────────────────────────────────────────────── */
+  --cloakd-accent:       #D97757;
+  --cloakd-accent-hover: #E68A6D;
+  --cloakd-accent-soft:  rgba(217, 119, 87, 0.18);
+
+  /* ── Interaction states ──────────────────────────────────────── */
+  --cloakd-hover-bg:    rgba(245, 244, 238, 0.06);
+  --cloakd-active-bg:   rgba(245, 244, 238, 0.10);
+  --cloakd-selected-bg: rgba(217, 119, 87, 0.15);
+  --cloakd-focus-ring:  rgba(217, 119, 87, 0.42);
+
+  /* ── Shadows ─────────────────────────────────────────────────── */
+  --cloakd-shadow-sm:  0 1px 2px  rgba(0, 0, 0, 0.20);
+  --cloakd-shadow:     0 2px 8px  rgba(0, 0, 0, 0.30);
+  --cloakd-shadow-md:  0 4px 16px rgba(0, 0, 0, 0.40);
+}

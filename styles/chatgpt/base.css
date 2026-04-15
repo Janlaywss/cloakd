@@ -1,0 +1,388 @@
+/*
+ * ═══════════════════════════════════════════════════════════════════
+ *  cloakd — ChatGPT base (theme-agnostic)
+ *  ────────────────────────────────────────────────────────────────────
+ *  Two kinds of content live here:
+ *    1. Shared tokens (typography, geometry, transitions) — same in
+ *       both themes, so no point duplicating them in light/dark.css.
+ *    2. All selector overrides. Every declaration consumes a token
+ *       via var() — no magic values. Theme switch is free.
+ *
+ *  Theme-specific color / shadow tokens are in ./light.css + ./dark.css.
+ * ═══════════════════════════════════════════════════════════════════
+ */
+
+:root {
+  /* ── Typography ──────────────────────────────────────────────── */
+  /*
+   * Mirrors Claude.ai's own font variable cascade.
+   * The "Anthropic Sans" / "Anthropic Serif" family names are defined
+   * via @font-face in contents/chatgpt.ts (Regular only, 400).
+   * Bold weights and CJK / Hebrew fall through to the tails below.
+   */
+  --font-anthropic-sans:  "Anthropic Sans", system-ui, "Segoe UI",
+                          Roboto, Helvetica, Arial, sans-serif;
+  --font-anthropic-serif: "Anthropic Serif", Georgia,
+                          "Arial Hebrew", "Noto Sans Hebrew",
+                          "Times New Roman", Times,
+                          "Hiragino Sans", "Yu Gothic", Meiryo, "Noto Sans CJK JP",
+                          "PingFang TC", "Microsoft JhengHei", "Noto Sans CJK TC",
+                          "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC",
+                          "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans CJK KR",
+                          serif;
+  --font-anthropic-mono:  "Anthropic Mono", ui-monospace, monospace;
+  --font-open-dyslexic:   "OpenDyslexic", "Comic Sans MS", ui-serif, serif;
+
+  /* Semantic aliases — names are identical to Claude.ai's tokens. */
+  --font-ui:              var(--font-anthropic-sans);
+  --font-ui-serif:        var(--font-anthropic-serif);
+  --font-mono:            var(--font-anthropic-mono);
+  --font-sans-serif:      var(--font-ui);
+  --font-serif:           var(--font-ui-serif);
+  --font-system:          system-ui, sans-serif;
+  --font-dyslexia:        var(--font-open-dyslexic), "Comic Sans MS", ui-serif, Georgia, serif;
+
+  /* Role aliases — which font for which speaker. Flip to taste. */
+  --font-user-message:    var(--font-ui);         /* user bubble = sans  */
+  --font-claude-response: var(--font-ui-serif);   /* assistant   = serif */
+
+  /* Cloakd's own font tokens (consumed by selectors below). */
+  --cloakd-font-sans:  var(--font-ui);
+  --cloakd-font-serif: var(--font-ui-serif);
+  --cloakd-font-mono:  var(--font-mono);
+
+  --cloakd-text-size:     15px;
+  --cloakd-text-size-sm:  13px;
+  --cloakd-text-size-lg:  17px;
+  --cloakd-leading:       1.65;
+
+  /* ── Geometry (rounded corners) ──────────────────────────────── */
+  --cloakd-radius-sm:        6px;
+  --cloakd-radius:           10px;
+  --cloakd-radius-md:        14px;
+  --cloakd-radius-lg:        20px;
+  --cloakd-radius-xl:        28px;
+  --cloakd-radius-bubble:    12px;   /* user message bubble */
+  --cloakd-radius-composer:  24px;   /* composer input      */
+  --cloakd-radius-btn:       10px;   /* buttons             */
+  --cloakd-radius-pill:      9999px; /* pills / icon btns   */
+
+  /* ── Motion ──────────────────────────────────────────────────── */
+  --cloakd-transition: 150ms ease-out;
+}
+
+/* ─── 1. Pipe tokens into ChatGPT's native variables ─────────────── */
+html {
+  /* Surfaces */
+  --main-surface-primary:    var(--cloakd-bg) !important;
+  --main-surface-secondary:  var(--cloakd-bg-subtle) !important;
+  --main-surface-tertiary:   var(--cloakd-bg-elevated) !important;
+
+  --sidebar-surface-primary:   var(--cloakd-sidebar-bg) !important;
+  --sidebar-surface-secondary: var(--cloakd-bg-subtle) !important;
+  --sidebar-surface-tertiary:  var(--cloakd-bg-elevated) !important;
+
+  --composer-surface-primary: var(--cloakd-composer-bg) !important;
+  --composer-surface:         var(--cloakd-composer-bg) !important;
+
+  --message-surface:          var(--cloakd-user-bubble-bg) !important;
+  --message-surface-tertiary: var(--cloakd-user-bubble-bg) !important;
+
+  /* Text */
+  --text-primary:    var(--cloakd-text) !important;
+  --text-secondary:  var(--cloakd-text-muted) !important;
+  --text-tertiary:   var(--cloakd-text-subtle) !important;
+  --text-quaternary: var(--cloakd-text-subtle) !important;
+  --text-token:      var(--cloakd-text) !important;
+
+  /* Borders */
+  --border-light:   var(--cloakd-border) !important;
+  --border-default: var(--cloakd-border) !important;
+  --border-medium:  var(--cloakd-border-strong) !important;
+  --border-heavy:   var(--cloakd-border-strong) !important;
+  --border-xlight:  var(--cloakd-border) !important;
+  --border-sharp:   var(--cloakd-border-strong) !important;
+
+  /* Interactive / hover */
+  --interactive-bg-secondary-default: transparent !important;
+  --interactive-bg-secondary-hover:   var(--cloakd-hover-bg) !important;
+  --interactive-bg-secondary-press:   var(--cloakd-active-bg) !important;
+  --interactive-bg-tertiary-hover:    var(--cloakd-hover-bg) !important;
+  --interactive-label-accent-default: var(--cloakd-accent) !important;
+
+  /* Links / brand */
+  --link:         var(--cloakd-accent) !important;
+  --link-hover:   var(--cloakd-accent-hover) !important;
+  --brand-purple: var(--cloakd-accent) !important;
+}
+
+/* ─── 2. Baseline: font + background ─────────────────────────────── */
+html,
+body {
+  font-family:    var(--cloakd-font-sans) !important;
+  background:     var(--cloakd-bg) !important;
+  color:          var(--cloakd-text) !important;
+  font-synthesis: none !important; /* don't fake bold from Regular-only woff2 */
+  -webkit-font-smoothing: antialiased;
+}
+
+main {
+  background: var(--cloakd-bg) !important;
+}
+
+/* ─── 3. Sidebar ─────────────────────────────────────────────────── */
+nav,
+#stage-slideover-sidebar,
+aside[class*="sidebar"],
+div[class*="sidebar"] {
+  background:   var(--cloakd-sidebar-bg) !important;
+  border-color: var(--cloakd-border) !important;
+}
+
+/* Page header fade — consumes --cloakd-bg + --cloakd-bg-transparent
+   so both themes produce a clean same-color fade (no gray fringe). */
+#page-header {
+  box-shadow: none !important;
+  background: linear-gradient(
+    to bottom,
+    var(--cloakd-bg),
+    var(--cloakd-bg) 65%,
+    var(--cloakd-bg-transparent)
+  );
+}
+
+.bg-token-bg-secondary-surface {
+  background: var(--cloakd-sidebar-bg)!important
+}
+
+nav a,
+nav button,
+aside a,
+aside button {
+  border-radius: var(--cloakd-radius) !important;
+  transition: background var(--cloakd-transition),
+              color      var(--cloakd-transition) !important;
+}
+
+nav a:hover,
+nav button:hover,
+aside a:hover,
+aside button:hover {
+  background: var(--cloakd-hover-bg) !important;
+}
+
+/* ─── 4. User message bubble ─────────────────────────────────────── */
+/*
+ * ChatGPT wraps the user message in nested divs; the innermost visible
+ * div typically carries the background + rounded-*xl class. Target the
+ * content container rather than the author-role root so we don't
+ * collide with layout.
+ */
+[data-message-author-role="user"] {
+  background: transparent !important;
+}
+
+[data-message-author-role="user"] .whitespace-pre-wrap,
+[data-message-author-role="user"] [class*="rounded-3xl"],
+[data-message-author-role="user"] [class*="rounded-2xl"],
+[data-message-author-role="user"] > div > div > div,
+[data-message-author-role="user"] [data-message-id] > div {
+  background:    var(--cloakd-user-bubble-bg) !important;
+  color:         var(--cloakd-text) !important;
+  font-family:   var(--font-user-message) !important;
+}
+
+[data-message-author-role="user"] .user-message-bubble-color {
+  border-radius: var(--cloakd-radius-bubble) !important;
+  background:    var(--cloakd-user-bubble-bg) !important;
+}
+
+/* ─── 5. Assistant message ───────────────────────────────────────── */
+[data-message-author-role="assistant"] {
+  background: var(--cloakd-assistant-bg) !important;
+  color:      var(--cloakd-text) !important;
+}
+
+.prose,
+.markdown {
+  color:       var(--cloakd-text) !important;
+  font-family: var(--font-claude-response) !important;
+  font-size:   var(--cloakd-text-size) !important;
+  line-height: var(--cloakd-leading) !important;
+}
+
+.prose strong,
+.markdown strong {
+  color: var(--cloakd-text) !important;
+}
+
+.prose a,
+.markdown a {
+  color: var(--cloakd-accent) !important;
+}
+
+/* Inline code */
+.prose :not(pre) > code,
+.markdown :not(pre) > code {
+  background:    var(--cloakd-bg-subtle) !important;
+  color:         var(--cloakd-text) !important;
+  font-family:   var(--cloakd-font-mono) !important;
+  border-radius: var(--cloakd-radius-sm) !important;
+  padding:       2px 6px !important;
+  border:        1px solid var(--cloakd-border) !important;
+}
+
+/* Code blocks */
+.prose pre,
+.markdown pre,
+pre:has(code) {
+  background:    var(--cloakd-bg-subtle) !important;
+  border:        1px solid var(--cloakd-border) !important;
+  border-radius: var(--cloakd-radius-md) !important;
+  padding:       14px 18px !important;
+  font-family:   var(--cloakd-font-mono) !important;
+}
+
+pre code,
+.prose pre code,
+.markdown pre code {
+  background:  transparent !important;
+  padding:     0 !important;
+  border:      none !important;
+  font-family: var(--cloakd-font-mono) !important;
+}
+
+/* ─── 6. Composer (chat input) ───────────────────────────────────── */
+form[data-type="unified-composer"],
+form:has(#prompt-textarea),
+[data-testid="composer-root"],
+[class*="ComposerContainer"] {
+  background:    var(--cloakd-composer-bg) !important;
+  border-radius: var(--cloakd-radius-composer) !important;
+  border:        1px solid var(--cloakd-border) !important;
+  box-shadow:    var(--cloakd-shadow) !important;
+}
+
+#prompt-textarea,
+textarea[data-id="root"] {
+  font-family: var(--cloakd-font-sans) !important;
+  color:       var(--cloakd-text) !important;
+  background:  transparent !important;
+  border:      none !important;
+  font-size:   var(--cloakd-text-size) !important;
+  line-height: var(--cloakd-leading) !important;
+}
+
+#prompt-textarea::placeholder {
+  color: var(--cloakd-text-subtle) !important;
+}
+
+/* ─── 7. Buttons ─────────────────────────────────────────────────── */
+button {
+  font-family:   var(--cloakd-font-sans) !important;
+  border-radius: var(--cloakd-radius-btn) !important;
+  transition: background var(--cloakd-transition),
+              color      var(--cloakd-transition),
+              transform  var(--cloakd-transition) !important;
+}
+
+button:hover:not([disabled]) {
+  background: var(--cloakd-hover-bg);
+}
+
+button:active:not([disabled]) {
+  background: var(--cloakd-active-bg);
+  transform:  scale(0.98);
+}
+
+/* Circular / icon-only buttons stay round */
+button[class*="rounded-full"] {
+  border-radius: var(--cloakd-radius-pill) !important;
+}
+
+/* Primary / send button — Claude's signature copper */
+button[data-testid="send-button"],
+button[data-testid="composer-send-button"],
+button[aria-label*="Send" i],
+button[class*="bg-black"]:not([class*="rounded-full"]) {
+  background:    var(--cloakd-accent) !important;
+  color:         var(--cloakd-text-on-accent) !important;
+  border-radius: var(--cloakd-radius-pill) !important;
+  border:        none !important;
+}
+
+button[data-testid="send-button"]:hover,
+button[data-testid="composer-send-button"]:hover,
+button[aria-label*="Send" i]:hover {
+  background: var(--cloakd-accent-hover) !important;
+}
+
+/* Send button icon: white */
+button[data-testid="send-button"] svg,
+button[data-testid="composer-send-button"] svg,
+button[aria-label*="Send" i] svg {
+  color: var(--cloakd-text-on-accent) !important;
+  fill:  currentColor !important;
+}
+
+/* ─── 8. Focus ring ──────────────────────────────────────────────── */
+*:focus-visible {
+  outline: none !important;
+}
+
+/* ─── 9. Scrollbars ──────────────────────────────────────────────── */
+* {
+  scrollbar-color: var(--cloakd-border-strong) transparent;
+  scrollbar-width: thin;
+}
+
+*::-webkit-scrollbar {
+  width:  10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background:      var(--cloakd-border-strong);
+  border-radius:   var(--cloakd-radius-pill);
+  border:          2px solid transparent;
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background:      var(--cloakd-text-subtle);
+  background-clip: padding-box;
+  border:          2px solid transparent;
+}
+
+/* ─── 10. Modals, menus, tooltips ────────────────────────────────── */
+/*[role="dialog"],*/
+/*[role="menu"],*/
+/*[role="listbox"],*/
+/*[data-radix-popper-content-wrapper] > * {*/
+/*  background:    var(--cloakd-bg-elevated) !important;*/
+/*  border:        1px solid var(--cloakd-border) !important;*/
+/*  border-radius: var(--cloakd-radius-md) !important;*/
+/*  box-shadow:    var(--cloakd-shadow-md) !important;*/
+/*  color:         var(--cloakd-text) !important;*/
+/*}*/
+
+[role="menuitem"],
+[role="option"] {
+  border-radius: var(--cloakd-radius-sm) !important;
+  color:         var(--cloakd-text) !important;
+}
+
+[role="menuitem"]:hover,
+[role="option"]:hover {
+  background: var(--cloakd-hover-bg) !important;
+}
+
+/* ─── 11. Selection highlight ────────────────────────────────────── */
+::selection {
+  background: var(--cloakd-accent-soft);
+  color:      var(--cloakd-text);
+}
