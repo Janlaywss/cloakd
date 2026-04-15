@@ -1,127 +1,157 @@
 # Cloakd
 
-**把 ChatGPT 的网页端伪装成 Claude.ai。** Plasmo 浏览器扩展，纯 CSS 注入 —— 不动 DOM、不注入 React、加载一次不再执行。
+**Languages:** English · [简体中文](README.zh-CN.md)
 
-- 暖奶油底色 / 铜橙 accent
-- Anthropic Sans 做 UI,Anthropic Serif 做助手回复（和 claude.ai 一致）
-- 圆角气泡、悬浮 / 选中态匹配 Claude 的交互反馈
-- 浅色 / 深色模式自动跟随 ChatGPT 自身设置
-- 所有可调参数抽成 CSS 变量,调优只改 3 个文件
+**Reskin ChatGPT to look and feel like Claude.ai.** A [Plasmo](https://plasmo.com) browser extension, pure CSS injection — no DOM mutation, no React injection into host pages, loaded once and done.
 
-> ⚠️ 个人折腾项目。目前只支持 ChatGPT (`chatgpt.com` / `chat.openai.com`)。Gemini 版本计划中,未开工。
+- Warm cream background / copper accent
+- Anthropic Sans for UI, Anthropic Serif for assistant responses (matches claude.ai)
+- Rounded bubbles, hover / active states that mirror Claude's interaction feedback
+- Light / dark mode follows ChatGPT's own setting
+- Every tunable value lives as a CSS variable — 3 files to touch for any tweak
+- Per-product on/off toggles via extension popup
+
+> ⚠️ Personal project. Currently supports ChatGPT only (`chatgpt.com` / `chat.openai.com`). Gemini is on the roadmap.
 
 ---
 
-## 安装
+## Install
 
-### 先决条件
+### Prerequisites
 
 - Node 20+
-- pnpm (推荐) 或 npm
+- pnpm (recommended) or npm
 
-### 步骤
+### Steps
 
 ```sh
-# 1. 安装依赖（大约 9 秒）
+# 1. Install deps (~9 seconds)
 pnpm install
 
-# 2. 构建生产包
+# 2. Build production bundle
 pnpm build
 
-# 3. 加载到 Chrome
-# chrome://extensions → 打开右上角"开发者模式" → "加载已解压的扩展程序"
-# → 选择 build/chrome-mv3-prod/
+# 3. Load into Chrome
+# chrome://extensions → enable Developer mode (top right)
+# → Load unpacked → select build/chrome-mv3-prod/
 ```
 
-然后访问 https://chatgpt.com,应该立刻看到 Claude 风格的界面。
+Then visit https://chatgpt.com and you should see the Claude-styled UI immediately.
 
-### 开发模式
+### Dev mode
 
-改样式的时候别用 `pnpm build`,用 watch:
+For active development (CSS auto-rebuild on save):
 
 ```sh
 pnpm dev
 ```
 
-然后加载的是 `build/chrome-mv3-dev/`。保存任何 CSS / TS 文件,Plasmo 会自动 rebuild。rebuild 完成之后,需要在 `chrome://extensions` 里点 Cloakd 卡片上的 **刷新** 图标,然后在 chatgpt.com 上硬刷(⌘⇧R)才能看到新样式生效。
+Load `build/chrome-mv3-dev/` instead. After any rebuild, click the **refresh** icon on the Cloakd card in `chrome://extensions`, then hard-refresh chatgpt.com (⌘⇧R / Ctrl+Shift+R).
 
-> 依赖安装说明:项目里通过 `pnpm.overrides` 把 sharp 强制升到了 0.33.x,避开了旧版 sharp 从 GitHub release 拉 libvips 二进制的坑 —— 那个在国内基本必超时。如果你升级 Plasmo 后想移除这个 override,请参考 [AGENT.md](AGENT.md) 里 "Gotchas #1"。
+> **On the `sharp@0.33` override**: the project pins `sharp@^0.33.5` via `pnpm.overrides` to sidestep legacy sharp 0.32's postinstall libvips fetch from GitHub releases (unreliable behind restrictive networks). See [AGENT.md](AGENT.md) Gotcha #1.
 
 ---
 
-## 如何调主题
+## Per-product toggle
 
-所有可调参数都在 `styles/chatgpt/` 目录下的三个 CSS 文件里。
+Click the Cloakd icon in the Chrome toolbar to open the popup. Each supported product has its own switch:
 
-| 文件 | 改它会影响 | 里面有什么 |
+```
+┌────────────────────────────────┐
+│ Cloakd                         │
+│ Claude-style reskin            │
+│────────────────────────────────│
+│ ChatGPT                  [●━━] │  ← on
+│ chatgpt.com                    │
+│                                │
+│ Gemini                  ┌────┐ │  ← disabled
+│ gemini.google.com       │SOON│ │
+│                         └────┘ │
+│────────────────────────────────│
+│ Changes apply instantly.       │
+└────────────────────────────────┘
+```
+
+Changes apply instantly — no page reload. State persists via `chrome.storage.sync`, so it follows you across devices on the same Chrome profile.
+
+---
+
+## How to tune the theme
+
+All tunable values live under `styles/chatgpt/` in three files:
+
+| File | Scope | Contents |
 |---|---|---|
-| [`styles/chatgpt/light.css`](styles/chatgpt/light.css) | 只浅色模式 | 所有浅色 token(颜色、阴影、边框) |
-| [`styles/chatgpt/dark.css`](styles/chatgpt/dark.css) | 只深色模式 | 同名 token 的深色版本 |
-| [`styles/chatgpt/base.css`](styles/chatgpt/base.css) | 两种模式共享 | 字体栈、圆角、过渡、以及所有选择器(选择器都用 `var(...)` 读 token,不硬编码颜色) |
+| [`styles/chatgpt/light.css`](styles/chatgpt/light.css) | Light mode only | All light-theme tokens (colors, shadows, borders) |
+| [`styles/chatgpt/dark.css`](styles/chatgpt/dark.css) | Dark mode only | Same token names, dark values |
+| [`styles/chatgpt/base.css`](styles/chatgpt/base.css) | Both modes | Font stack, radii, transitions, plus ALL selectors (selectors read tokens via `var(...)` — never hardcoded) |
 
-**原则**:要改颜色 / 阴影 → 去 `light.css` 或 `dark.css`。要改字体 / 圆角 / 过渡 → 去 `base.css`。要改"哪个元素用哪个 token" → 去 `base.css` 的下半部分。
+**Rule of thumb**: colors / shadows → `light.css` or `dark.css`. Fonts / radii / transitions → `base.css`. Which element uses which token → the lower half of `base.css`.
 
-### 常见调优场景
+### Common tweaks
 
 ```css
-/* styles/chatgpt/light.css — 想把底色换成纯白 */
+/* light.css — pure white background */
 --cloakd-bg: #FFFFFF;
---cloakd-bg-transparent: rgb(255 255 255 / 0);  /* 记得同步这个 */
+--cloakd-bg-transparent: rgb(255 255 255 / 0);  /* keep in sync */
 
-/* styles/chatgpt/dark.css — 想让深色模式更深 */
---cloakd-bg: #1a1a19;
---cloakd-bg-transparent: rgb(26 26 25 / 0);
-
-/* styles/chatgpt/base.css — 想让用户气泡也用 serif */
+/* base.css — user bubble in serif */
 --font-user-message: var(--font-ui-serif);
 
-/* styles/chatgpt/base.css — 觉得气泡圆角太方 */
+/* base.css — rounder bubble */
 --cloakd-radius-bubble: 20px;
 
-/* light.css + dark.css 都要改 — 把 accent 换成 Anthropic 的蓝 */
+/* light.css + dark.css — swap accent color */
 --cloakd-accent: #6C63FF;
 --cloakd-accent-hover: #5850E0;
 --cloakd-accent-soft: rgba(108, 99, 255, 0.12);
 ```
 
-改完之后 `pnpm dev` 会自动 rebuild,然后点扩展刷新 + 页面硬刷即可。
+After saving, `pnpm dev` auto-rebuilds. Click the extension's refresh icon + hard-refresh the page.
 
-### Token 命名
+### Token naming
 
-两套 token,两种职责:
+Two namespaces, two responsibilities:
 
-- **`--cloakd-*`** — 这个项目自己的语义 token (`--cloakd-bg`, `--cloakd-accent`, `--cloakd-radius-bubble` 等)。选择器都读这些。
-- **`--font-*`** — 字体相关的 token,完全镜像 Claude.ai 自己用的变量名 (`--font-ui`, `--font-ui-serif`, `--font-user-message`, `--font-claude-response`, `--font-anthropic-sans/serif/mono` 等)。这样将来从 Claude.ai 直接复制 CSS 片段过来就能用。
+- **`--cloakd-*`** — this project's own semantic tokens (`--cloakd-bg`, `--cloakd-accent`, `--cloakd-radius-bubble`, ...). All selectors consume these.
+- **`--font-*`** — font-related tokens that mirror Claude.ai's own variable names exactly (`--font-ui`, `--font-ui-serif`, `--font-user-message`, `--font-claude-response`, `--font-anthropic-sans/serif/mono`, ...). CSS snippets copied straight from Claude.ai will "just work".
 
 ---
 
-## 目录结构
+## Project layout
 
 ```
 cloakd/
-├── AGENT.md                  AI 助手使用的项目上下文文档
-├── README.md                 这个文件
+├── AGENT.md                    context file for AI coding assistants
+├── README.md                   this file (English)
+├── README.zh-CN.md             Chinese version
 ├── package.json
 ├── tsconfig.json
+├── popup.tsx                   extension popup (React) — per-product toggles
+├── popup.css
 ├── assets/
-│   ├── icon.png              512×512 占位图标（随时替换）
+│   ├── icon.png                512×512 placeholder (replaceable)
 │   └── fonts/
 │       ├── anthropic-sans.woff2   Anthropic Sans Web Regular
 │       └── anthropic-serif.woff2  Anthropic Serif Web Regular
 ├── contents/
-│   └── chatgpt.ts            content script:注入 @font-face + 三个 CSS 文件
-└── styles/
-    └── chatgpt/
-        ├── base.css          字体 / 几何 / 选择器
-        ├── light.css         浅色 tokens
-        └── dark.css          深色 tokens
+│   └── chatgpt.ts              content script: injects @font-face + 3 CSS files
+├── scripts/
+│   └── pack-crx.mjs            CRX packer (used by CI; runs locally too)
+├── styles/
+│   └── chatgpt/
+│       ├── base.css            fonts / geometry / selectors
+│       ├── light.css           light-mode tokens
+│       └── dark.css            dark-mode tokens
+└── .github/workflows/
+    └── release.yml             auto-build + auto-publish CRX on merge to `release`
 ```
 
 ---
 
-## 字体
+## Fonts
 
-两个 woff2 通过 Plasmo 的 `data-base64:` 导入方式直接内联进 content script bundle:
+The two woff2 files are inlined into the content script bundle via Plasmo's `data-base64:` import:
 
 ```ts
 // contents/chatgpt.ts
@@ -129,34 +159,97 @@ import anthropicSans  from "data-base64:~assets/fonts/anthropic-sans.woff2"
 import anthropicSerif from "data-base64:~assets/fonts/anthropic-serif.woff2"
 ```
 
-**为什么要内联**:content script 注入的 `<style>` 里的 `@font-face { src: url(...) }` 没法直接读扩展自身的文件 (需要走 `web_accessible_resources` + `chrome.runtime.getURL()` 动态重写 CSS),麻烦且有首屏闪烁。base64 内联代价是 bundle 从 12KB 涨到 403KB,但 Chrome 会缓存解析后的样式表,每次 SPA 导航都是零闪烁。
+**Why inline**: a content-script-injected `<style>` with `@font-face { src: url(...) }` can't read extension-relative files without the `web_accessible_resources` + `chrome.runtime.getURL()` dance, which also flickers on first paint. Inlining bloats the bundle from ~12KB to ~403KB but gives zero-flicker SPA navigation.
 
-**已知限制**:
-- 只装了 **Regular 400**。粗体 / italic 会落回系统字体栈的下一档 (`system-ui`),不伪粗 —— 是 `font-synthesis: none` 防止浏览器合成丑陋的 faux-bold。如果想彻底匹配,从 claude.ai 的 devtools → Network 面板抓几份粗体 woff2 扔进 `assets/fonts/`,在 [`contents/chatgpt.ts`](contents/chatgpt.ts) 里加对应的 `@font-face` 块。
-- **Anthropic Mono 没装**。代码块走系统 mono (SF Mono / Menlo)。
+**Known limits**:
+- **Regular 400 only.** Bold / italic text falls back to `system-ui` (thanks to `font-synthesis: none`, Chrome won't synthesize ugly faux-bold). To match claude.ai fully, grab heavier weights from Claude's devtools → Network tab, drop them in `assets/fonts/`, and add matching `@font-face` blocks in [`contents/chatgpt.ts`](contents/chatgpt.ts).
+- **No Anthropic Mono.** Code blocks use system mono (SF Mono / Menlo).
 
 ---
 
-## 已知限制
+## Release
 
-1. **ChatGPT 的 Tailwind class 名会变**。一些兜底选择器 (`[class*="rounded-3xl"]` 之类) 可能哪天就命中不到了。用 DevTools 检查实际 DOM,在 [`styles/chatgpt/base.css`](styles/chatgpt/base.css) 追加更精确的选择器。
-2. **没有开关按钮**。想临时关掉的话在 `chrome://extensions` 里停用 Cloakd。未来会考虑加 popup toggle。
-3. **Plasmo 版本**。当前锁在 0.88,有新版 0.90.5 可用,升级之后可能可以去掉 sharp override —— 详见 [AGENT.md](AGENT.md)。
-4. **没做过 Firefox**。只在 Chromium 系 (Chrome / Edge / Arc / Brave) 上验证过。Plasmo 理论上支持 Firefox 构建,没测过。
+**Every merge into the `release` branch** triggers a GitHub Actions workflow ([`.github/workflows/release.yml`](.github/workflows/release.yml)) that builds, signs, packs a `.crx`, and publishes a GitHub Release with both `.crx` and `.zip` assets.
+
+### One-time setup: CRX signing key
+
+The `.crx` is signed with a private key. Using the same key across releases keeps the extension ID stable.
+
+1. Generate a 2048-bit RSA key locally:
+
+   ```sh
+   openssl genrsa -out cloakd.pem 2048
+   ```
+
+2. Add it as a repository secret:
+
+   - Go to `https://github.com/<you>/cloakd/settings/secrets/actions`
+   - Click **New repository secret**
+   - Name: `CRX_PRIVATE_KEY`
+   - Value: the full contents of `cloakd.pem` (including the `-----BEGIN PRIVATE KEY-----` / `-----END PRIVATE KEY-----` lines)
+
+3. Store `cloakd.pem` somewhere safe (password manager). **Never commit it** — it's excluded via `.gitignore`. Losing it means the next release gets a different extension ID, and existing installs become orphaned.
+
+### Cutting a release
+
+```sh
+# 1. Bump version in package.json (e.g. 0.0.1 → 0.0.2)
+# 2. Commit it on your dev branch
+git add package.json pnpm-lock.yaml
+git commit -m "release v0.0.2"
+
+# 3. Merge into release branch and push
+git checkout release
+git merge main
+git push origin release
+```
+
+The workflow will:
+
+1. Read the version from `package.json`
+2. **Fail if `v<version>` tag already exists** (reminder to bump)
+3. `pnpm install --frozen-lockfile` → `pnpm build`
+4. Write `CRX_PRIVATE_KEY` to a temp `cloakd.pem`
+5. Run `node scripts/pack-crx.mjs` → `cloakd-v<version>.crx`
+6. Zip `build/chrome-mv3-prod/` → `cloakd-v<version>.zip`
+7. Create a GitHub Release tagged `v<version>` with both files attached
+8. Clean up the temp key
+
+### Packing a CRX locally
+
+```sh
+pnpm build
+CRX_KEY=./cloakd.pem node scripts/pack-crx.mjs
+# → cloakd-v<version>.crx at repo root
+```
+
+### A note on `.crx` installation
+
+Chrome has become strict about installing `.crx` files from outside the Web Store. In practice:
+
+- **Chrome / Chromium on personal machines**: most users should download the `.zip`, unzip it, and use "Load unpacked" in developer mode.
+- **Enterprise-managed Chrome**, **Brave**, **Edge**: often more permissive with external `.crx` — try the `.crx` first.
+- **Developer workflow**: always `Load unpacked` from `build/chrome-mv3-dev/`; never install a `.crx` during development.
+
+---
+
+## Known limitations
+
+1. **ChatGPT's Tailwind class names churn.** Fallback selectors like `[class*="rounded-3xl"]` may stop matching when OpenAI refactors. Use DevTools to inspect the actual DOM and append more specific selectors to [`styles/chatgpt/base.css`](styles/chatgpt/base.css).
+2. **Plasmo 0.88** — 0.90.5 is available. Upgrading may let you drop the `pnpm.overrides.sharp` entry — see [AGENT.md](AGENT.md) Gotcha #1.
+3. **Not tested on Firefox.** Only verified on Chromium (Chrome / Edge / Arc / Brave). Plasmo supports Firefox in theory; untested here.
 
 ---
 
 ## Roadmap
 
-- [ ] Gemini (`gemini.google.com`) 支持 — `contents/gemini.ts` + `styles/gemini/{base,light,dark}.css`
-- [ ] 多字重字体 (Medium / Semibold / Bold)
-- [ ] Popup toggle,临时禁用注入
-- [ ] Options 页,让用户直接在扩展里调 token 而不用改文件 + 重载
+- [ ] Gemini (`gemini.google.com`) support — `contents/gemini.ts` + `styles/gemini/{base,light,dark}.css`
+- [ ] Heavier font weights (Medium / Semibold / Bold)
+- [ ] Options page — tune tokens from the extension UI, no file editing
+- [ ] Firefox / Safari builds
 
 ---
 
-## 贡献 / 二次开发
+## Contributing / hacking
 
-看 [AGENT.md](AGENT.md) 了解项目约定、设计原则和已知的坑。
-
-如果你要让 AI 助手帮忙改这个项目,`AGENT.md` 会被 Claude Code / Cursor 等工具自动加载进上下文。
+Read [AGENT.md](AGENT.md) for project conventions, design principles, and known gotchas. It's written as a context file for AI coding assistants (Claude Code, Cursor, Copilot) but it's also the best human-readable architecture doc.
