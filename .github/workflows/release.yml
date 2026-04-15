@@ -1,0 +1,105 @@
+name: Release CRX
+
+# Triggers on any push (including merge commits) to the `release` branch.
+# Typical flow: bump package.json version on a dev branch, merge into
+# `release`, push. CI reads the version, refuses if the tag already
+# exists, builds, signs the CRX, and publishes a GitHub Release.
+on:
+  push:
+    branches:
+      - release
+
+# action-gh-release needs write access to create tags / releases.
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Full history for tag lookup and auto-generated release notes.
+          fetch-depth: 0
+
+      - name: Read version from package.json
+        id: version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Releasing v$VERSION"
+
+      - name: Verify tag does not already exist
+        run: |
+          TAG="v${{ steps.version.outputs.version }}"
+          if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+            echo "::error::Tag $TAG already exists. Bump the version in package.json before merging to the release branch."
+            exit 1
+          fi
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build extension
+        run: pnpm build
+
+      - name: Create zip archive
+        working-directory: build/chrome-mv3-prod
+        run: |
+          zip -r "$GITHUB_WORKSPACE/cloakd-v${{ steps.version.outputs.version }}.zip" .
+
+      - name: Write CRX private key from secret
+        env:
+          CRX_PRIVATE_KEY: ${{ secrets.CRX_PRIVATE_KEY }}
+        run: |
+          if [ -z "$CRX_PRIVATE_KEY" ]; then
+            echo "::error::Secret CRX_PRIVATE_KEY is missing. See README → Release section for setup."
+            exit 1
+          fi
+          printf '%s' "$CRX_PRIVATE_KEY" > cloakd.pem
+          chmod 600 cloakd.pem
+
+      - name: Pack CRX
+        env:
+          CRX_KEY: ./cloakd.pem
+        run: node scripts/pack-crx.mjs
+
+      - name: Sanity check outputs
+        run: |
+          ls -lh "cloakd-v${{ steps.version.outputs.version }}.crx" \
+                 "cloakd-v${{ steps.version.outputs.version }}.zip"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: Cloakd v${{ steps.version.outputs.version }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          body: |
+            Built automatically from `release` branch at ${{ github.sha }}.
+
+            ### Install
+
+            - **Chrome / Chromium**: download `cloakd-v${{ steps.version.outputs.version }}.zip`, unzip, and use `chrome://extensions` → Developer mode → **Load unpacked**.
+            - **Brave / Edge / enterprise-managed Chrome**: may accept the `.crx` directly.
+          files: |
+            cloakd-v${{ steps.version.outputs.version }}.crx
+            cloakd-v${{ steps.version.outputs.version }}.zip
+
+      - name: Cleanup private key
+        if: always()
+        run: rm -f cloakd.pem
